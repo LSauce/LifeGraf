@@ -54,7 +54,6 @@ lifegraf-parent/                    # Maven父项目
 │   ├── lifegraf-bilibili/          # Bilibili视频平台
 │   ├── lifegraf-steam/             # Steam游戏平台
 │   ├── lifegraf-activitywatch/     # ActivityWatch桌面追踪
-│   ├── lifegraf-electricity/       # 电费使用情况
 │   ├── lifegraf-gps/               # GPS位置追踪
 │   └── lifegraf-leetcode/          # LeetCode提交记录
 └── lifegraf-boot/                  # 主应用启动器
@@ -116,7 +115,6 @@ GRAFANA_PASSWORD=your_secure_password
 
 # 模块启用/禁用
 STEAM_ENABLED=true
-ELECTRICITY_ENABLED=true
 BILIBILI_ENABLED=true
 GPS_ENABLED=true
 ACTIVITY_WATCH_ENABLED=true
@@ -125,10 +123,6 @@ LEETCODE_ENABLED=true
 # Steam 配置
 STEAM_API_KEY=your_steam_api_key
 STEAM_MY_ID=your_steam_id
-
-# 电费配置
-ELECTRICITY_ID=your_electricity_id
-ELECTRICITY_USERNAME=your_username
 
 # LeetCode 配置
 LEETCODE_USER_SLUG=your_username
@@ -145,9 +139,6 @@ app:
     api-key: ${STEAM_API_KEY:...}
     my-steam-id: ${MY_STEAM_ID:...}
     cron: ${STEAM_CRON:0 0/5 * * * ?}  # 每5分钟执行一次
-  electricity:
-    base-url: ${ELECTRICITY_BASE_URL:...}
-    cron: ${ELECTRICITY_CRON:0 0/10 * * ?}  # 每10分钟执行一次
   activity-watch:
     base-url: ${ACTIVITY_WATCH_BASE_URL:...}
     cron: ${ACTIVITY_WATCH_CRON:0 0/10 * * * ?}  # 每10分钟执行一次
