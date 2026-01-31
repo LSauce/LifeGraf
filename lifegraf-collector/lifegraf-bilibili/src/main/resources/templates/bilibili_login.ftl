@@ -81,10 +81,10 @@
 
                 if (data.code === 0 && data.data) {
                     qrcodeKey = data.data.qrcode_key;
-                    const qrUrl = data.data.url;
+                    const qrUrl = encodeURIComponent(data.data.url);
 
                     // 显示二维码（使用第三方API生成二维码图片）
-                    document.getElementById('qrcodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrUrl)}`;
+                    document.getElementById('qrcodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${r"${qrUrl}"}`;
                     document.getElementById('qrcodeContainer').classList.remove('hidden');
                     document.getElementById('checkBtn').disabled = false;
                     showStatus('二维码生成成功，请在手机上扫描并确认登录', 'info');
@@ -107,7 +107,7 @@
             showStatus('正在检查登录状态...', 'info');
 
             try {
-                const response = await fetch(`/bilibili/qrcode/poll?qrcode_key=${encodeURIComponent(qrcodeKey)}`);
+                const response = await fetch(`/bilibili/qrcode/poll?qrcode_key=${r"${qrcodeKey}"}`);
                 const data = await response.json();
 
                 if (data.code === 8404402) {
@@ -141,13 +141,13 @@
         function showStatus(message, type) {
             const statusElement = document.getElementById('statusInfo');
             statusElement.textContent = message;
-            statusElement.className = `status ${type}`;
+            statusElement.className = `status ${r"${type}"}`;
             statusElement.classList.remove('hidden');
         }
 
         function showCookie(cookie) {
             const cookieElement = document.getElementById('cookieInfo');
-            cookieElement.textContent = `登录成功！Cookie: ${cookie}`;
+            cookieElement.textContent = `登录成功！Cookie: ${r"${cookie}"}`;
             cookieElement.classList.remove('hidden');
             showStatus('登录成功！', 'success');
         }

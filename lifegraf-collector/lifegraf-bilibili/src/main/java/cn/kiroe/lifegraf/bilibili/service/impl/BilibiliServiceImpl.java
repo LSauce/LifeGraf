@@ -72,7 +72,13 @@ public class BilibiliServiceImpl implements BilibiliService {
         storage.setKeyName(BilibiliConstant.BILIBILI_COOKIE_KEY);
         storage.setValue(cookie);
         storage.setExpireTime(Instant.now().plus(BilibiliConstant.COOKIE_EXPIRE_DAYS, ChronoUnit.DAYS));
-        tempStorageMapper.insert(storage);
+        TempStorage tempStorage = tempStorageMapper.selectOne(Wrappers.<TempStorage>lambdaQuery().eq(TempStorage::getKeyName, BilibiliConstant.BILIBILI_COOKIE_KEY));
+        if (tempStorage != null) {
+            storage.setId(tempStorage.getId());
+            tempStorageMapper.updateById(storage);
+        } else {
+            tempStorageMapper.insert(storage);
+        }
 
         log.info("B站登录Cookie已保存");
     }
