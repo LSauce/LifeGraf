@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.kiroe.lifegraf.leetcode.mapper.LeetCodeSubmissionMapper">
+
+    <resultMap id="LeetCodeSubmissionResultMap" type="cn.kiroe.lifegraf.leetcode.model.LeetCodeSubmission">
+        <id column="id" property="id"/>
+        <result column="submission_id" property="submissionId"/>
+        <result column="user_slug" property="userSlug"/>
+        <result column="submit_time" property="submitTime"/>
+        <result column="question_title" property="questionTitle"/>
+        <result column="question_translated_title" property="questionTranslatedTitle"/>
+        <result column="title_slug" property="titleSlug"/>
+        <result column="question_frontend_id" property="questionFrontendId"/>
+        <result column="original_json" property="originalJson"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="getLastSubmissionTime" resultType="java.time.Instant">
+        SELECT COALESCE(MAX(submit_time), '1970-01-01 00:00:00'::TIMESTAMPTZ) as last_submission_time
+        FROM leetcode_submission
+    </select>
+
+    <select id="getLastSubmissionTimeByUser" resultType="java.time.Instant">
+        SELECT COALESCE(MAX(submit_time), '1970-01-01 00:00:00'::TIMESTAMPTZ) as last_submission_time
+        FROM leetcode_submission
+        WHERE user_slug = #{userSlug}
+    </select>
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO leetcode_submission (
+            submission_id, user_slug, submit_time, question_title, question_translated_title,
+            title_slug, question_frontend_id, original_json, create_time, update_time
+        ) VALUES
+        <foreach collection="submissions" item="item" separator=",">
+            (
+                #{item.submissionId}, #{item.userSlug}, #{item.submitTime}, #{item.questionTitle},
+                #{item.questionTranslatedTitle}, #{item.titleSlug}, #{item.questionFrontendId},
+                #{item.originalJson}::jsonb, NOW(), NOW()
+            )
+        </foreach>
+    </insert>
+</mapper>

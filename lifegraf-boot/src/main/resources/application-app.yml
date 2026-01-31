@@ -1,0 +1,23 @@
+# 模块开关配置
+app:
+  gps:
+    enabled: ${GPS_ENABLED:false}
+  steam:
+    enabled: ${STEAM_ENABLED:false}
+    base-url: ${STEAM_BASE_URL:https://api.steampowered.com}
+    api-key: ${STEAM_API_KEY:your_steam_api_key}
+    my-steam-id: ${STEAM_MY_ID:12345678901234567}
+    cron: ${STEAM_CRON:0 0/5 * * * ?}
+  activity-watch:
+    enabled: ${ACTIVITY_WATCH_ENABLED:false}
+    base-url: ${ACTIVITY_WATCH_BASE_URL:http://localhost:5600}
+    cron: ${ACTIVITY_WATCH_CRON:0 0/10 * * * ?}
+  bilibili:
+    enabled: ${BILIBILI_ENABLED:false}
+    cron: ${BILIBILI_CRON:0 0/10 * * * ?}
+  leetcode:
+    enabled: ${LEETCODE_ENABLED:false}
+    base-url: ${LEETCODE_BASE_URL:https://leetcode.cn}
+    user-slug: ${LEETCODE_USER_SLUG:your_username}
+    cron: ${LEETCODE_CRON:0 0/30 * * * ?}
+

@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>cn.kiroe</groupId>
+    <artifactId>lifegraf-parent</artifactId>
+    <version>${revision}</version>
+    <packaging>pom</packaging>
+    <name>LifeGraf Parent</name>
+    <description>LifeGraf - Personal Data Aggregation Platform</description>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.8</version>
+        <relativePath/>
+    </parent>
+
+    <modules>
+        <module>lifegraf-common</module>
+        <module>lifegraf-collector</module>
+        <module>lifegraf-boot</module>
+    </modules>
+
+    <properties>
+        <revision>0.1.0-SNAPSHOT</revision>
+        <java.version>21</java.version>
+        <spring-modulith.version>1.4.4</spring-modulith.version>
+        <mapstruct.version>1.5.5.Final</mapstruct.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <hutool.version>5.8.38</hutool.version>
+        <mybatis-plus.version>3.5.15</mybatis-plus.version>
+        <knife4j-openapi3.version>4.4.0</knife4j-openapi3.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Spring Modulith BOM -->
+            <dependency>
+                <groupId>org.springframework.modulith</groupId>
+                <artifactId>spring-modulith-bom</artifactId>
+                <version>${spring-modulith.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- MapStruct -->
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct</artifactId>
+                <version>${mapstruct.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>cn.hutool</groupId>
+                <artifactId>hutool-core</artifactId>
+                <version>${hutool.version}</version>
+            </dependency>
+
+            <!-- MyBatis-Plus -->
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+                <version>${mybatis-plus.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.github.xiaoymin</groupId>
+                <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+                <version>${knife4j-openapi3.version}</version>
+            </dependency>
+
+            <!-- Internal Modules -->
+            <dependency>
+                <groupId>cn.kiroe</groupId>
+                <artifactId>lifegraf-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.kiroe</groupId>
+                <artifactId>lifegraf-bilibili</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.kiroe</groupId>
+                <artifactId>lifegraf-steam</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.kiroe</groupId>
+                <artifactId>lifegraf-activitywatch</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.kiroe</groupId>
+                <artifactId>lifegraf-gps</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.kiroe</groupId>
+                <artifactId>lifegraf-leetcode</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.11.0</version>
+                    <configuration>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.springframework.boot</groupId>
+                                <artifactId>spring-boot-configuration-processor</artifactId>
+                                <version>3.5.8</version>
+                            </path>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                                <version>1.18.36</version>
+                            </path>
+                            <path>
+                                <groupId>org.mapstruct</groupId>
+                                <artifactId>mapstruct-processor</artifactId>
+                                <version>1.5.5.Final</version>
+                            </path>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok-mapstruct-binding</artifactId>
+                                <version>0.2.0</version>
+                            </path>
+                        </annotationProcessorPaths>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>LSauce</name>
+            <email>ls_satan@qq.com</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git@github.com:LSauce/LifeGraf.git</connection>
+        <developerConnection>scm:git@github.com:LSauce/LifeGraf.git</developerConnection>
+        <url>https://github.com/LSauce/LifeGraf</url>
+    </scm>
+</project>

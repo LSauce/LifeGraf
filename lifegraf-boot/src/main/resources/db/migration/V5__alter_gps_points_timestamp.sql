@@ -1,0 +1,1 @@
+alter table gps_points alter column timestamp type timestamptz using timestamp::timestamptz;

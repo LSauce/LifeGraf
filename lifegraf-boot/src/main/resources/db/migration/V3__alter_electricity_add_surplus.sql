@@ -1,0 +1,1 @@
+alter table electricity_metric add surplus NUMERIC(15, 4);

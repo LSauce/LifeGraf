@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "Bash(./mvnw clean:*)",
+      "Bash(wc:*)",
+      "Bash(cat:*)",
+      "Bash(du:*)",
+      "Bash(powershell:*)",
+      "Bash(dir:*)",
+      "Bash(docker compose config:*)",
+      "Bash(docker buildx build --check D:CodeLifeGrafDockerfile)",
+      "Bash(docker buildx build:*)",
+      "Bash(ls -la \"D:\\\\Code\\\\LifeGraf\\\\.mvn\\\\wrapper\"\" 2>nul || echo \"Directory not found \")"
+    ]
+  }
+}

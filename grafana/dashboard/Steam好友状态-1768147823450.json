@@ -1,0 +1,778 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 11,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 6,
+      "panels": [],
+      "title": "个人统计",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "${PostgreSql}"
+      },
+      "description": "This panel shows the total game time played by Steam friends.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "m"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 13,
+        "w": 24,
+        "x": 0,
+        "y": 1
+      },
+      "id": 7,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "always",
+        "stacking": "normal",
+        "text": {
+          "percentSize": 1
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "maxWidth": -1,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xField": "time\\metric",
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "12.2.1",
+      "targets": [
+        {
+          "dataset": "life_graf",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "${PostgreSql}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "-- 首先，创建一个包含过去 7 天的日期序列\r\nWITH date_series AS (\r\n    SELECT generate_series(\r\n        date_trunc('day', NOW() - INTERVAL '$showDays days'), -- 从6天前开始（包含今天，共7天）\r\n        date_trunc('day', NOW()),\r\n        '1 day'::interval\r\n    ) AS day\r\n),\r\nplayer_status AS (\r\n    SELECT\r\n        time,\r\n        game_name,\r\n        -- 获取下一条记录的时间，用于计算当前状态持续了多久\r\n        LEAD(time) OVER (PARTITION BY steam_id ORDER BY time) as next_time,\r\n        steam_id\r\n    FROM steam_player_gaming\r\n    WHERE\r\n        steam_id = '$SteamId'\r\n        AND time >= NOW() - INTERVAL '7 days'\r\n),\r\ndurations AS (\r\n    SELECT\r\n        -- 使用 TimescaleDB 的 time_bucket 按天分组\r\n        time_bucket('1 day', time) AS day,\r\n        game_name,\r\n        -- 计算持续时间（秒）\r\n        -- 过滤：如果两条记录间隔超过 10 分钟，认为中间已下线，不计入时长\r\n        EXTRACT(EPOCH FROM (next_time - time)) AS duration_seconds\r\n    FROM player_status\r\n    WHERE\r\n        game_name IS NOT NULL\r\n        AND next_time IS NOT NULL\r\n        AND (next_time - time) < INTERVAL '10 minutes' -- 采样间隔阈值，可根据抓取频率调整\r\n),\r\n-- 计算每天每个游戏的总时长\r\ndaily_playtime AS (\r\n    SELECT\r\n        day AS \"time\",\r\n        game_name AS metric,\r\n        SUM(duration_seconds) / 60.0 AS play_minutes -- 转换为分钟\r\n    FROM durations\r\n    GROUP BY 1, 2\r\n)\r\n-- 将日期序列与游戏时长数据进行左连接，以填充缺失的日期\r\nSELECT\r\n    d.day AS \"time\",\r\n    COALESCE(dp.metric, 'No Game Played') AS metric, -- 如果当天没有玩游戏，可以给一个默认值\r\n    COALESCE(dp.play_minutes, 0) AS play_minutes -- 如果当天没有玩游戏，时长计为 0\r\nFROM date_series d\r\nLEFT JOIN daily_playtime dp ON d.day = dp.time\r\nORDER BY d.day, metric;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "游戏时间统计",
+      "transformations": [
+        {
+          "id": "groupingToMatrix",
+          "options": {
+            "columnField": "metric",
+            "rowField": "time",
+            "valueField": "play_minutes"
+          }
+        }
+      ],
+      "type": "barchart"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "id": 5,
+      "panels": [],
+      "title": "好友状态",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "${PostgreSql}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "头像"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "image"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "名称"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 154
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "状态"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 77
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "0": {
+                        "color": "red",
+                        "index": 0,
+                        "text": "离线"
+                      },
+                      "1": {
+                        "color": "green",
+                        "index": 1,
+                        "text": "在线"
+                      },
+                      "2": {
+                        "color": "yellow",
+                        "index": 2,
+                        "text": "忙碌"
+                      },
+                      "3": {
+                        "color": "orange",
+                        "index": 3,
+                        "text": "离开"
+                      },
+                      "4": {
+                        "color": "super-light-red",
+                        "index": 4,
+                        "text": "请勿打扰"
+                      },
+                      "5": {
+                        "color": "light-green",
+                        "index": 5,
+                        "text": "寻求交易"
+                      },
+                      "6": {
+                        "color": "light-blue",
+                        "index": 6,
+                        "text": "寻求游戏队友"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 15,
+        "w": 8,
+        "x": 0,
+        "y": 15
+      },
+      "id": 1,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "游戏名"
+          }
+        ]
+      },
+      "pluginVersion": "12.2.1",
+      "targets": [
+        {
+          "dataset": "life_graf",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "${PostgreSql}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  avatar AS \"头像\",\r\n  persona_name AS \"名称\",\r\n  persona_state AS \"状态\",\r\n  game_name AS \"游戏名\"\r\nFROM\r\n  steam_player\r\nWHERE steam_id in ($SteamIdList)\r\nORDER BY\r\n  game_name,persona_state DESC,persona_name",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "alias": "\"头像\"",
+                "parameters": [
+                  {
+                    "name": "avatar",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "alias": "\"名称\"",
+                "parameters": [
+                  {
+                    "name": "persona_name",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "alias": "\"状态\"",
+                "parameters": [
+                  {
+                    "name": "persona_state",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "alias": "\"游戏名\"",
+                "parameters": [
+                  {
+                    "name": "game_name",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "orderBy": {
+              "property": {
+                "name": "game_name",
+                "type": "string"
+              },
+              "type": "property"
+            },
+            "orderByDirection": "DESC"
+          },
+          "table": "steam_player"
+        }
+      ],
+      "title": "Steam好友状态",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "${PostgreSql}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "custom": {
+            "axisPlacement": "auto",
+            "fillOpacity": 70,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineWidth": 0,
+            "spanNulls": false
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "transparent",
+                  "index": 0,
+                  "text": "离线"
+                },
+                "1": {
+                  "color": "green",
+                  "index": 1,
+                  "text": "在线"
+                },
+                "2": {
+                  "color": "yellow",
+                  "index": 2,
+                  "text": "忙碌"
+                },
+                "3": {
+                  "color": "super-light-green",
+                  "index": 3,
+                  "text": "离开"
+                },
+                "4": {
+                  "color": "super-light-purple",
+                  "index": 4,
+                  "text": "请勿打扰"
+                },
+                "5": {
+                  "color": "purple",
+                  "index": 5,
+                  "text": "寻求交易"
+                },
+                "6": {
+                  "color": "blue",
+                  "index": 6,
+                  "text": "寻求游戏队友"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 15,
+        "w": 16,
+        "x": 8,
+        "y": 15
+      },
+      "id": 3,
+      "options": {
+        "alignValue": "left",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "mergeValues": true,
+        "rowHeight": 0.9,
+        "showValue": "auto",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.2.1",
+      "targets": [
+        {
+          "dataset": "life_graf",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "${PostgreSql}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT \r\n    sp.persona_name as \"名称\", \r\n    spg.time as \"时间\", \r\n    spg.persona_state as \"状态\"\r\nFROM steam_player as sp \r\nJOIN steam_player_gaming as spg ON sp.steam_id = spg.steam_id and $__timeFilter(spg.time)\r\nWHERE sp.steam_id in ($SteamIdList)\r\nORDER BY spg.persona_state DESC, sp.persona_name",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "玩家在线时序图",
+      "transformations": [
+        {
+          "id": "groupingToMatrix",
+          "options": {
+            "columnField": "名称",
+            "rowField": "时间",
+            "valueField": "状态"
+          }
+        }
+      ],
+      "type": "state-timeline"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "${PostgreSql}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic-by-name"
+          },
+          "custom": {
+            "axisPlacement": "auto",
+            "fillOpacity": 70,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineWidth": 0,
+            "spanNulls": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 17,
+        "w": 24,
+        "x": 0,
+        "y": 30
+      },
+      "id": 2,
+      "options": {
+        "alignValue": "left",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "mergeValues": true,
+        "rowHeight": 0.9,
+        "showValue": "always",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.2.1",
+      "targets": [
+        {
+          "dataset": "life_graf",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "${PostgreSql}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT \r\n    sp.persona_name as \"名称\", \r\n    spg.time as \"时间\", \r\n    spg.game_name as \"游戏名\"\r\nFROM steam_player as sp \r\nJOIN steam_player_gaming as spg \r\nON sp.steam_id = spg.steam_id\r\n     AND sp.steam_id in ($SteamIdList)\r\n     AND $__timeFilter(spg.time)\r\nORDER BY spg.game_name,sp.persona_name",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "steam_player_gaming"
+        }
+      ],
+      "title": "游戏时序图",
+      "transformations": [
+        {
+          "id": "groupingToMatrix",
+          "options": {
+            "columnField": "名称",
+            "emptyValue": "null",
+            "rowField": "时间",
+            "valueField": "游戏名"
+          }
+        }
+      ],
+      "type": "state-timeline"
+    }
+  ],
+  "preload": false,
+  "schemaVersion": 42,
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "allowCustomValue": false,
+        "current": {
+          "text": "知了",
+          "value": "76561199109534472"
+        },
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "bf6zjc7f9nbpcf"
+        },
+        "definition": "SELECT\n  CONCAT_WS('-', steam_id,persona_name) AS full_info\nFROM\n  steam_player\nORDER BY\n  persona_name;",
+        "description": "",
+        "includeAll": false,
+        "label": "个人",
+        "name": "SteamId",
+        "options": [],
+        "query": "SELECT\n  CONCAT_WS('-', steam_id,persona_name) AS full_info\nFROM\n  steam_player\nORDER BY\n  persona_name;",
+        "refresh": 1,
+        "regex": "/^(?<value>[^-]+)-(?<text>.*)$/",
+        "staticOptions": [],
+        "type": "query"
+      },
+      {
+        "allowCustomValue": true,
+        "current": {
+          "text": "6",
+          "value": "6"
+        },
+        "label": "显示天数",
+        "name": "showDays",
+        "options": [
+          {
+            "selected": true,
+            "text": "7",
+            "value": "6"
+          },
+          {
+            "selected": false,
+            "text": "14",
+            "value": "13"
+          }
+        ],
+        "query": "7 : 6,14 : 13",
+        "type": "custom"
+      },
+      {
+        "allowCustomValue": false,
+        "current": {
+          "text": [
+            "Archer",
+            "Devil",
+            "Kuroro",
+            "Mario",
+            "Ricardo",
+            "Takashiro",
+            "lonzzi",
+            "ls_satan",
+            "吃了一吨大西瓜",
+            "玩不了一点",
+            "玩原神玩的",
+            "知了",
+            "羊村小灰灰"
+          ],
+          "value": [
+            "76561199248552588",
+            "76561199120745083",
+            "76561198138665140",
+            "76561199079847195",
+            "76561199241497334",
+            "76561198125275128",
+            "76561198321494002",
+            "76561198303439483",
+            "76561199089520534",
+            "76561199110794499",
+            "76561198839613983",
+            "76561199109534472",
+            "76561198844924369"
+          ]
+        },
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "bf6zjc7f9nbpcf"
+        },
+        "definition": "SELECT\n  CONCAT_WS('-', steam_id,persona_name) AS full_info\nFROM\n  steam_player\nORDER BY\n  persona_name;",
+        "description": "",
+        "includeAll": false,
+        "label": "好友",
+        "multi": true,
+        "name": "SteamIdList",
+        "options": [],
+        "query": "SELECT\n  CONCAT_WS('-', steam_id,persona_name) AS full_info\nFROM\n  steam_player\nORDER BY\n  persona_name;",
+        "refresh": 1,
+        "regex": "/^(?<value>[^-]+)-(?<text>.*)$/",
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": "LifeGraf PostgreSQL",
+          "value": "bf6zjc7f9nbpcf"
+        },
+        "name": "PostgreSql",
+        "options": [],
+        "query": "grafana-postgresql-datasource",
+        "refresh": 1,
+        "regex": "",
+        "type": "datasource"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-3h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Steam好友状态",
+  "uid": "kit85ls",
+  "version": 67
+}

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>lifegraf-collector</artifactId>
+    <version>${revision}</version>
+    <packaging>pom</packaging>
+    <name>LifeGraf Collector</name>
+    <description>LifeGraf - Data Collector Modules</description>
+
+    <parent>
+        <groupId>cn.kiroe</groupId>
+        <artifactId>lifegraf-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <modules>
+        <module>lifegraf-bilibili</module>
+        <module>lifegraf-steam</module>
+        <module>lifegraf-activitywatch</module>
+         <module>lifegraf-gps</module>
+        <module>lifegraf-leetcode</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>cn.kiroe</groupId>
+                <artifactId>lifegraf-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+</project>

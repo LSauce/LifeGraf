@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: LifeGraf
+  config:
+    import: optional:classpath:application-app.yml
+  datasource:
+    url: jdbc:postgresql://localhost:5432/life_graf
+    username: postgres
+    password: 123456
+    driver-class-name: org.postgresql.Driver
+  security:
+    user:
+      name: admin
+      password: ${ADMIN_PASSWORD:admin123}
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    validate-on-migrate: true
+  freemarker:
+    enabled: true
+    cache: false
+    content-type: text/html
+    charset: utf-8
+    suffix: .ftl
+    request-context-attribute: request
+    allow-request-override: true
+    allow-session-override: true
+    expose-spring-macro-helpers: true
+    check-template-location: true
+    prefer-file-system-access: true
+    template-loader-path:
+      - classpath:/templates/
+    settings:
+      datetime_format: yyyy-MM-dd HH:mm:ss
+      template_update_delay: 30m
+      default_encoding: utf-8
+  task:
+    scheduling:
+      pool:
+        size: 4
+logging:
+  level:
+    cn.kiroe.lifegraf: info

@@ -1,0 +1,19 @@
+apiVersion: 1
+
+datasources:
+  - name: LifeGraf PostgreSQL
+    type: postgres
+    uid: lifegraf-postgres
+    access: proxy
+    orgId: 1
+    url: postgres:5432
+    user: postgres
+    database: life_graf
+    basicAuth: false
+    isDefault: true
+    jsonData:
+      sslmode: disable
+      postgresVersion: 1600
+      timescaledb: true
+    secureJsonData:
+      password: '123456'

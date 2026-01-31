@@ -1,0 +1,91 @@
+services:
+  postgres:
+    image: timescale/timescaledb:2.15.0-pg16
+    container_name: lifegraf-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: life_graf
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.5.0
+    container_name: lifegraf-grafana
+    environment:
+      # Grafana admin password
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin123}
+      # Disable default login form for better security
+      GF_AUTH_DISABLE_LOGIN_FORM: "false"
+      # Allow embedding Grafana in iframes
+      GF_SECURITY_ALLOW_EMBEDDING: "true"
+      # Disable anonymous access
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+    volumes:
+      # Provisioning configuration
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      # Dashboards
+      - ./grafana/dashboard:/var/lib/grafana/dashboards:ro
+      # Grafana data
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  lifegraf:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lifegraf-app
+    environment:
+      # Database connection
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/life_graf
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 123456
+
+      # Admin password
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+
+      # Module enable/disable
+      GPS_ENABLED: ${GPS_ENABLED:-false}
+      STEAM_ENABLED: ${STEAM_ENABLED:-false}
+      ACTIVITY_WATCH_ENABLED: ${ACTIVITY_WATCH_ENABLED:-false}
+      BILIBILI_ENABLED: ${BILIBILI_ENABLED:-false}
+      LEETCODE_ENABLED: ${LEETCODE_ENABLED:-false}
+
+      # Steam configuration
+      STEAM_BASE_URL: ${STEAM_BASE_URL:-https://api.steampowered.com}
+      STEAM_API_KEY: ${STEAM_API_KEY:-your_steam_api_key}
+      STEAM_MY_ID: ${STEAM_MY_ID:-12345678901234567}
+      STEAM_CRON: ${STEAM_CRON:-0 0/5 * * * ?}
+
+      # ActivityWatch configuration
+      ACTIVITY_WATCH_BASE_URL: ${ACTIVITY_WATCH_BASE_URL:-http://localhost:5600}
+      ACTIVITY_WATCH_CRON: ${ACTIVITY_WATCH_CRON:-0 0/10 * * * ?}
+
+      # Bilibili configuration
+      BILIBILI_CRON: ${BILIBILI_CRON:-0 0/10 * * * ?}
+
+      # LeetCode configuration
+      LEETCODE_BASE_URL: ${LEETCODE_BASE_URL:-https://leetcode.cn}
+      LEETCODE_USER_SLUG: ${LEETCODE_USER_SLUG:-your_username}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  grafana_data:

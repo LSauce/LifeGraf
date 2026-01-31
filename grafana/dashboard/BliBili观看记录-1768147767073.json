@@ -1,0 +1,469 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 18,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "${PostgreSql}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisPlacement": "auto",
+            "fillOpacity": 70,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineWidth": 0,
+            "spanNulls": false
+          },
+          "mappings": [
+            {
+              "options": {
+                "NULL": {
+                  "color": "transparent",
+                  "index": 0
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": true,
+                  "tooltip": true,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 23,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "alignValue": "left",
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "mergeValues": true,
+        "rowHeight": 0.9,
+        "showValue": "auto",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.2.1",
+      "targets": [
+        {
+          "dataset": "life_graf",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "${PostgreSql}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  view_at as \"时间\",\r\n  NULL AS \"作者名称\",\r\n  NULL AS \"标题\"\r\nFROM bilibili_history\r\nWHERE\r\n  $__timeFilter(view_at)\r\n\r\nUNION ALL\r\n\r\nSELECT\r\n  CASE\r\n    -- 当 progress 为 -1 或 0 时，减 duration\r\n    WHEN progress = -1 OR progress = 0 THEN view_at - (duration * interval '1 second')\r\n    -- 其他情况，减 progress\r\n    ELSE view_at - (progress * interval '1 second')\r\n  END as \"时间\",\r\n  author_name as \"作者名称\",\r\n  title as \"标题\"\r\nFROM bilibili_history\r\nWHERE\r\n  $__timeFilter(view_at)\r\n\r\nORDER BY\r\n  1 ASC;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "观看历史时序图",
+      "transformations": [
+        {
+          "id": "groupingToMatrix",
+          "options": {
+            "columnField": "作者名称",
+            "emptyValue": "null",
+            "rowField": "时间",
+            "valueField": "标题"
+          }
+        }
+      ],
+      "type": "state-timeline"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "${PostgreSql}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "cover"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "视频封面"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "auto"
+                }
+              },
+              {
+                "id": "custom.hideFrom.viz",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "title"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "视频标题"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "author_face"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "作者头像"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "image"
+                }
+              },
+              {
+                "id": "custom.hideFrom.viz",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "author_name"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "UP主"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "view_at"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "截至时间"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "duration"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "视频长度"
+              },
+              {
+                "id": "unit",
+                "value": "s"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "progress"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "当前进度"
+              },
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "-1": {
+                        "color": "green",
+                        "index": 0,
+                        "text": "完成"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tag_name"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "标签"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "dt"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "设备"
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "0": {
+                        "index": 8,
+                        "text": "其他"
+                      },
+                      "1": {
+                        "index": 0,
+                        "text": "手机端"
+                      },
+                      "2": {
+                        "index": 4,
+                        "text": "WEB端"
+                      },
+                      "3": {
+                        "index": 1,
+                        "text": "手机端"
+                      },
+                      "4": {
+                        "index": 5,
+                        "text": "PAD端"
+                      },
+                      "5": {
+                        "index": 2,
+                        "text": "手机端"
+                      },
+                      "6": {
+                        "index": 6,
+                        "text": "PAD端"
+                      },
+                      "7": {
+                        "index": 3,
+                        "text": "手机端"
+                      },
+                      "9": {
+                        "index": 7,
+                        "text": "TV端"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 15,
+        "w": 24,
+        "x": 0,
+        "y": 23
+      },
+      "id": 1,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true
+      },
+      "pluginVersion": "12.2.1",
+      "targets": [
+        {
+          "dataset": "life_graf",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "${PostgreSql}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  cover,\r\n  title,\r\n  author_face,\r\n  author_name,\r\n  view_at,\r\n  tag_name,\r\n  duration,\r\n  progress,\r\n  bvid,\r\n  dt\r\nFROM\r\n  bilibili_history\r\nWHERE\r\n  $__timeFilter(view_at)\r\nORDER BY\r\n  view_at DESC",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "*",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "bilibili_history"
+        }
+      ],
+      "title": "BiliBili观看历史统计",
+      "type": "table"
+    }
+  ],
+  "preload": false,
+  "schemaVersion": 42,
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "LifeGraf PostgreSQL",
+          "value": "bf6zjc7f9nbpcf"
+        },
+        "name": "PostgreSql",
+        "options": [],
+        "query": "grafana-postgresql-datasource",
+        "refresh": 1,
+        "regex": "",
+        "type": "datasource"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-3h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "BliBili观看记录",
+  "uid": "kipvpqg",
+  "version": 17
+}

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>cn.kiroe</groupId>
+        <artifactId>lifegraf-parent</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <artifactId>lifegraf-boot</artifactId>
+    <name>LifeGraf Boot</name>
+    <description>Main application launcher module</description>
+
+    <dependencies>
+        <!-- Common Module -->
+        <dependency>
+            <groupId>cn.kiroe</groupId>
+            <artifactId>lifegraf-common</artifactId>
+        </dependency>
+
+        <!-- All Data Source Modules -->
+        <dependency>
+            <groupId>cn.kiroe</groupId>
+            <artifactId>lifegraf-bilibili</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>cn.kiroe</groupId>
+            <artifactId>lifegraf-steam</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>cn.kiroe</groupId>
+            <artifactId>lifegraf-activitywatch</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>cn.kiroe</groupId>
+            <artifactId>lifegraf-gps</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>cn.kiroe</groupId>
+            <artifactId>lifegraf-leetcode</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

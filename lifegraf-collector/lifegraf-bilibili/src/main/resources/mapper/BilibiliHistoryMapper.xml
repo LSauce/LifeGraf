@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.kiroe.lifegraf.bilibili.mapper.BilibiliHistoryMapper">
+
+    <resultMap id="BilibiliHistoryResultMap" type="cn.kiroe.lifegraf.bilibili.model.BilibiliHistory">
+        <id column="id" property="id"/>
+        <result column="title" property="title"/>
+        <result column="long_title" property="longTitle"/>
+        <result column="cover" property="cover"/>
+        <result column="uri" property="uri"/>
+        <result column="oid" property="oid"/>
+        <result column="epid" property="epid"/>
+        <result column="bvid" property="bvid"/>
+        <result column="page" property="page"/>
+        <result column="cid" property="cid"/>
+        <result column="part" property="part"/>
+        <result column="business" property="business"/>
+        <result column="dt" property="dt"/>
+        <result column="videos" property="videos"/>
+        <result column="author_name" property="authorName"/>
+        <result column="author_face" property="authorFace"/>
+        <result column="author_mid" property="authorMid"/>
+        <result column="view_at" property="viewAt"/>
+        <result column="progress" property="progress"/>
+        <result column="badge" property="badge"/>
+        <result column="show_title" property="showTitle"/>
+        <result column="duration" property="duration"/>
+        <result column="current_val" property="currentVal"/>
+        <result column="total" property="total"/>
+        <result column="new_desc" property="newDesc"/>
+        <result column="is_finish" property="isFinish"/>
+        <result column="is_fav" property="isFav"/>
+        <result column="kid" property="kid"/>
+        <result column="tag_name" property="tagName"/>
+        <result column="live_status" property="liveStatus"/>
+        <result column="original_json" property="originalJson"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="getLastViewTime" resultType="java.time.Instant">
+        SELECT COALESCE(MAX(view_at), '1970-01-01 00:00:00'::TIMESTAMPTZ) as last_view_time
+        FROM bilibili_history
+    </select>
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO bilibili_history (
+            title, long_title, cover, uri, oid, epid, bvid, page, cid, part, business, dt,
+            videos, author_name, author_face, author_mid, view_at, progress, badge, show_title,
+            duration, current_val, total, new_desc, is_finish, is_fav, kid, tag_name, live_status,
+            original_json, create_time, update_time
+        ) VALUES
+        <foreach collection="histories" item="item" separator=",">
+            (
+                #{item.title}, #{item.longTitle}, #{item.cover}, #{item.uri}, #{item.oid}, #{item.epid},
+                #{item.bvid}, #{item.page}, #{item.cid}, #{item.part}, #{item.business}, #{item.dt},
+                #{item.videos}, #{item.authorName}, #{item.authorFace}, #{item.authorMid}, #{item.viewAt},
+                #{item.progress}, #{item.badge}, #{item.showTitle}, #{item.duration}, #{item.currentVal},
+                #{item.total}, #{item.newDesc}, #{item.isFinish}, #{item.isFav}, #{item.kid},
+                #{item.tagName}, #{item.liveStatus}, #{item.originalJson}::jsonb, NOW(), NOW()
+            )
+        </foreach>
+    </insert>
+</mapper>
