@@ -149,6 +149,17 @@ app:
     user-slug: ${LEETCODE_USER_SLUG:...}
 ```
 
+### Bilibili登录说明
+
+Bilibili模块通过二维码扫描登录机制工作，用户的登录凭据（Cookie）会被安全地存储在数据库中，以便定期同步观看历史和其他数据。
+
+如果需要使用Bilibili数据收集功能，您需要先进行Bilibili账户登录：
+
+1. 访问 http://localhost:8080/bilibili/login
+2. 使用手机Bilibili应用扫描显示的二维码
+3. 在手机上确认登录
+4. 登录成功后，Cookie信息将被安全地缓存到数据库中供后续使用
+
 ## 开发指南
 
 ### 添加新数据源
