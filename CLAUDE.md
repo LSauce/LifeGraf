@@ -60,19 +60,19 @@ lifegraf-parent/                    # Maven parent POM
 ### Docker
 ```bash
 # Build and start all services (PostgreSQL + LifeGraf)
-docker-compose up -d --build
+docker compose up -d --build
 
 # View logs
-docker-compose logs -f lifegraf
+docker compose logs -f lifegraf
 
 # Stop all services
-docker-compose down
+docker compose down
 
 # Stop and remove volumes
-docker-compose down -v
+docker compose down -v
 
 # Rebuild without cache
-docker-compose build --no-cache
+docker compose build --no-cache
 ```
 
 ### Environment Variables
